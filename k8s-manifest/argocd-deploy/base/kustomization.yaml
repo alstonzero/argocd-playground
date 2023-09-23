@@ -7,3 +7,4 @@ resources:
 patches:
   - path: patches/secret_argocd-secret.yaml
   - path: patches/configmap_argocd-cm.yaml
+  - path: patches/service_argocd-server.yaml
