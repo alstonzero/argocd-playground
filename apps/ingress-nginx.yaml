@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: "ingress-nginx"
+  namespace: argocd
+  labels:
+    app: ingress-nginx
+spec:
+  destination:
+    namespace: ingress-nginx
+    server: https://kubernetes.default.svc
+  project: cluster-management
+  source:
+    chart: ingress-nginx
+    repoURL: https://kubernetes.github.io/ingress-nginx
+    targetRevision: 4.8.1
+    helm:
+      releaseName: ingress-nginx
+      parameters:
+        - name: controller.metrics.enabled
+          value: "true"
+        - name: controller.metrics.serviceMonitor.enabled
+          value: "true"
+        # https://kubernetes.io/zh-cn/docs/concepts/services-networking/ingress/#default-ingress-class
+        # 设置nginx-ingress class为默认的IngressClass
+        - name: controller.ingressClassResource.default 
+          value: "true"
+        # watch新创建的Ingress对象，如果没有指定ingressClassName字段则使用nginx-ingress class
+        - name: controller.watchIngressWithoutClass
+          value: "true"
+        - name: controller.replicaCount
+          value: "2"
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+    managedNamespaceMetadata:
+      labels:
+        k8s-monitoring-target: "true"
+        # 给ns打上label，以便Prometheus可以通过该label发现该ns下的ServiceMonitor

@@ -1,0 +1,141 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: "meta-monitoring-{{ $clusterName }}"
+  namespace: argocd
+  labels:
+    app: meta-monitoring
+spec:
+  destination:
+    namespace: meta-monitoring
+    server: https://kubernetes.default.svc
+  project: cluster-management
+  source:
+    chart: kube-prometheus-stack
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 51.3.0
+    helm:
+      releaseName: meta-monitoring
+      values: |
+        defaultRules:
+          create: false
+        alertmanager:
+          enabled: true
+          config:
+            global:
+              resolve_timeout: 5m
+            route:
+              receiver: "null"
+              group_wait: 30s
+              group_interval: 5m
+              repeat_interval: 1h
+              group_by: [cluster, alertname]
+              routes:
+                - receiver: warning
+                  match:
+                    alertname: "etcdHighNumberOfFailedGRPCRequests"
+                  continue: false
+                - receiver: critical
+                  match:
+                    severity: critical
+                - receiver: warning
+                  match:
+                    severity: warning
+            receivers:
+            - name: "null"
+            templates:
+              - "/etc/alertmanager/config/*.tmpl"
+          ingress:
+            enabled: true
+            ingressClassName: "nginx"
+            hosts:
+              - "alertmanager.meta.monitoring.mycluster.com"
+          ingressPerReplica:
+            enabled: true
+            ingressClassName: "nginx"
+            hostPrefix: "alertmanager"
+            hostDomain: "meta.monitoring.mycluster.com"
+            paths:
+              - "/"
+            pathType: "ImplementationSpecific"
+          servicePerReplica:
+            enabled: true
+          alertmanagerSpec:
+            externalUrl: "http://alertmanager-0.meta.monitoring.mycluster.com"
+            replicas: 2
+        grafana:
+          enabled: true
+          ingress:
+            enabled: true
+            ingressClassName: "nginx"
+            hosts:
+              - "grafana.meta.monitoring.mycluster.com"
+          additionalDataSources:
+            - name: prometheus-mycluster
+              access: proxy  # 'proxy' or 'direct'
+              basicAuth: false
+              editable: false
+              jsonData:
+                tlsSkipVerify: true
+              type: prometheus
+              version: 1
+              url: "http://prometheus.k8s.monitoring.mycluster.com"
+        kubeApiServer:
+          enabled: false
+        kubelet:
+          enabled: false
+        kubeControllerManager:
+          enabled: false
+        coreDns:
+          enabled: false
+        kubeDns:
+          enabled: false
+        kubeEtcd:
+          enabled: false
+        kubeScheduler:
+          enabled: false
+        kubeProxy:
+          enabled: false
+        kubeStateMetrics:
+          enabled: false
+        nodeExporter:
+          enabled: false
+        prometheusOperator:
+          enabled: false
+        prometheus:
+          ingress:
+            enabled: true
+            ingressClassName: "nginx"
+            hosts:
+              - "prometheus.meta.monitoring.mycluster.com"
+          ingressPerReplica:
+            enabled: true
+            ingressClassName: "nginx"
+            hostPrefix: "prometheus"
+            hostDomain: "meta.monitoring.mycluster.com"
+            paths:
+              - "/"
+            pathType: "ImplementationSpecific"
+          servicePerReplica:
+            enabled: true
+          prometheusSpec:
+            externalLabels:
+              cluster: mycluster
+            additionalScrapeConfigs:
+              - job_name: "prometheus"
+                static_configs:
+                - targets:
+                  - "prometheus-0.k8s.monitoring.mycluster.com"
+                  - "prometheus-1.k8s.monitoring.mycluster.com"
+                  labels:
+                    cluster: mycluster
+            replicas: 2
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    managedNamespaceMetadata:
+      labels:
+        k8s-monitoring-target: "false"

@@ -1,0 +1,116 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: "k8s-monitoring"
+  namespace: argocd
+  labels:
+    app: k8s-monitoring
+spec:
+  destination:
+    namespace: k8s-monitoring
+    server: https://kubernetes.default.svc
+  project: cluster-management
+  source:
+    chart: kube-prometheus-stack
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 51.3.0
+    helm:
+      releaseName: k8s-monitoring
+      values: |
+        defaultRules:
+          rules:
+            alertmanager: false
+            prometheus: false
+        alertmanager:
+          enabled: false
+        grafana:
+          enabled: false
+        kubeControllerManager:
+          serviceMonitor:
+            https: true
+            insecureSkipVerify: true
+          service:
+            port: 10257
+            targetPort: 10257
+        kubeScheduler:
+          serviceMonitor:
+            https: true
+            insecureSkipVerify: true
+          service:
+            port: 10259
+            targetPort: 10259
+        kubeEtcd:
+          enabled: true
+        kubeProxy:
+          enabled: true
+        prometheus:
+          ingress:
+            enabled: true
+            ingressClassName: "nginx"
+            hosts:
+              - "prometheus.k8s.monitoring.mycluster.com"
+          ingressPerReplica:
+            enabled: true
+            ingressClassName: "nginx"
+            hostPrefix: "prometheus"
+            hostDomain: "k8s.monitoring.mycluster.com"
+            paths:
+              - "/"
+            pathType: "ImplementationSpecific"
+          serviceMonitor:
+            selfMonitor: false
+          servicePerReplica:
+            enabled: true
+          prometheusSpec:
+            topologySpreadConstraints:            
+              - maxSkew: 1
+                topologyKey: kubernetes.io/hostname
+                whenUnsatisfiable: DoNotSchedule
+                labelSelector:
+                  matchLabels:
+                    app: k8s-monitoring-prometheus
+            externalLabels:
+              cluster: mycluster
+            externalUrl: "http://prometheus-0.k8s.monitoring.mycluster.com"
+            additionalAlertManagerConfigs:
+              - static_configs:
+                - targets:
+                  - "alertmanager-0.meta.monitoring.mycluster.com"
+                  - "alertmanager-1.meta.monitoring.mycluster.com"
+            replicas: 2
+            ruleSelectorNilUsesHelmValues: false
+            ruleNamespaceSelector:
+              matchLabels:
+                k8s-monitoring-target: "true"
+            serviceMonitorSelectorNilUsesHelmValues: false
+            serviceMonitorNamespaceSelector:
+              matchLabels:
+                k8s-monitoring-target: "true"
+            podMonitorSelectorNilUsesHelmValues: false
+            podMonitorNamespaceSelector:
+              matchLabels:
+                k8s-monitoring-target: "true"
+            probeSelectorNilUsesHelmValues: false
+            probeNamespaceSelector:
+              matchLabels:
+                k8s-monitoring-target: "true"
+            secrets: []
+            podMetadata:
+              labels:
+                app: k8s-monitoring-prometheus
+            resources:
+              requests:
+                cpu: 500m
+                memory: 3Gi
+              limits:
+                cpu: 500m
+                memory: 3.5Gi
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    managedNamespaceMetadata:
+      labels:
+        k8s-monitoring-target: "true"
