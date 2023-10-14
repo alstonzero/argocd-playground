@@ -34,6 +34,9 @@ spec:
             paths:
               - "/"
             pathType: "ImplementationSpecific"
+          service:
+            type: LoadBalancer
+            loadBalancerIP: "11.0.1.216"
           servicePerReplica:
             enabled: true
           alertmanagerSpec:
@@ -41,6 +44,9 @@ spec:
             replicas: 2
         grafana:
           enabled: true
+          service:
+            type: LoadBalancer
+            loadBalancerIP: "11.0.1.217"
           ingress:
             enabled: true
             ingressClassName: "nginx"
@@ -92,6 +98,9 @@ spec:
             paths:
               - "/"
             pathType: "ImplementationSpecific"
+          service:
+            type: LoadBalancer
+            loadBalancerIP: "11.0.1.215"
           servicePerReplica:
             enabled: true
           prometheusSpec:
