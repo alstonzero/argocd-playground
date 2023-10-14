@@ -5,3 +5,4 @@ resources:
 patches:
   - path: patches/configmap_excoredns.yaml
   - path: patches/service_external-dns.yaml
+  - path: patches/deployment_excoredns.yaml
