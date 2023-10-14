@@ -21,30 +21,6 @@ spec:
           create: false
         alertmanager:
           enabled: true
-          config:
-            global:
-              resolve_timeout: 5m
-            route:
-              receiver: "null"
-              group_wait: 30s
-              group_interval: 5m
-              repeat_interval: 1h
-              group_by: [cluster, alertname]
-              routes:
-                - receiver: warning
-                  match:
-                    alertname: "etcdHighNumberOfFailedGRPCRequests"
-                  continue: false
-                - receiver: critical
-                  match:
-                    severity: critical
-                - receiver: warning
-                  match:
-                    severity: warning
-            receivers:
-            - name: "null"
-            templates:
-              - "/etc/alertmanager/config/*.tmpl"
           ingress:
             enabled: true
             ingressClassName: "nginx"

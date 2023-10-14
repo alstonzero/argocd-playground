@@ -40,7 +40,16 @@ spec:
             port: 10259
             targetPort: 10259
         kubeEtcd:
-          enabled: true
+          service:
+            prot: 2379
+            targetPort: 2379
+          serviceMonitor:
+            scheme: https
+            insecureSkipVerify: false
+            serverName: localhost
+            caFile: /etc/prometheus/secrets/etcd-client-cert/ca.crt
+            certFile: /etc/prometheus/secrets/etcd-client-cert/healthcheck-client.crt
+            keyFile: /etc/prometheus/secrets/etcd-client-cert/healthcheck-client.key
         kubeProxy:
           enabled: true
         prometheus:
@@ -94,7 +103,7 @@ spec:
             probeNamespaceSelector:
               matchLabels:
                 k8s-monitoring-target: "true"
-            secrets: []
+            secrets: ['etcd-client-cert']
             podMetadata:
               labels:
                 app: k8s-monitoring-prometheus
