@@ -49,19 +49,19 @@ spec:
             enabled: true
             ingressClassName: "nginx"
             hosts:
-              - "alertmanager.meta.monitoring.mycluster.com"
+              - "alertmanager.meta.monitoring.homecluster.com"
           ingressPerReplica:
             enabled: true
             ingressClassName: "nginx"
             hostPrefix: "alertmanager"
-            hostDomain: "meta.monitoring.mycluster.com"
+            hostDomain: "meta.monitoring.homecluster.com"
             paths:
               - "/"
             pathType: "ImplementationSpecific"
           servicePerReplica:
             enabled: true
           alertmanagerSpec:
-            externalUrl: "http://alertmanager-0.meta.monitoring.mycluster.com"
+            externalUrl: "http://alertmanager-0.meta.monitoring.homecluster.com"
             replicas: 2
         grafana:
           enabled: true
@@ -69,9 +69,9 @@ spec:
             enabled: true
             ingressClassName: "nginx"
             hosts:
-              - "grafana.meta.monitoring.mycluster.com"
+              - "grafana.meta.monitoring.homecluster.com"
           additionalDataSources:
-            - name: prometheus-mycluster
+            - name: prometheus-homecluster
               access: proxy  # 'proxy' or 'direct'
               basicAuth: false
               editable: false
@@ -79,7 +79,7 @@ spec:
                 tlsSkipVerify: true
               type: prometheus
               version: 1
-              url: "http://prometheus.k8s.monitoring.mycluster.com"
+              url: "http://prometheus.k8s.monitoring.homecluster.com"
         kubeApiServer:
           enabled: false
         kubelet:
@@ -107,12 +107,12 @@ spec:
             enabled: true
             ingressClassName: "nginx"
             hosts:
-              - "prometheus.meta.monitoring.mycluster.com"
+              - "prometheus.meta.monitoring.homecluster.com"
           ingressPerReplica:
             enabled: true
             ingressClassName: "nginx"
             hostPrefix: "prometheus"
-            hostDomain: "meta.monitoring.mycluster.com"
+            hostDomain: "meta.monitoring.homecluster.com"
             paths:
               - "/"
             pathType: "ImplementationSpecific"
@@ -120,15 +120,15 @@ spec:
             enabled: true
           prometheusSpec:
             externalLabels:
-              cluster: mycluster
+              cluster: homecluster
             additionalScrapeConfigs:
               - job_name: "prometheus"
                 static_configs:
                 - targets:
-                  - "prometheus-0.k8s.monitoring.mycluster.com"
-                  - "prometheus-1.k8s.monitoring.mycluster.com"
+                  - "prometheus-0.k8s.monitoring.homecluster.com"
+                  - "prometheus-1.k8s.monitoring.homecluster.com"
                   labels:
-                    cluster: mycluster
+                    cluster: homecluster
             replicas: 2
   syncPolicy:
     automated:

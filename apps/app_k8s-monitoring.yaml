@@ -48,12 +48,12 @@ spec:
             enabled: true
             ingressClassName: "nginx"
             hosts:
-              - "prometheus.k8s.monitoring.mycluster.com"
+              - "prometheus.k8s.monitoring.homecluster.com"
           ingressPerReplica:
             enabled: true
             ingressClassName: "nginx"
             hostPrefix: "prometheus"
-            hostDomain: "k8s.monitoring.mycluster.com"
+            hostDomain: "k8s.monitoring.homecluster.com"
             paths:
               - "/"
             pathType: "ImplementationSpecific"
@@ -70,13 +70,13 @@ spec:
                   matchLabels:
                     app: k8s-monitoring-prometheus
             externalLabels:
-              cluster: mycluster
-            externalUrl: "http://prometheus-0.k8s.monitoring.mycluster.com"
+              cluster: homecluster
+            externalUrl: "http://prometheus-0.k8s.monitoring.homecluster.com"
             additionalAlertManagerConfigs:
               - static_configs:
                 - targets:
-                  - "alertmanager-0.meta.monitoring.mycluster.com"
-                  - "alertmanager-1.meta.monitoring.mycluster.com"
+                  - "alertmanager-0.meta.monitoring.homecluster.com"
+                  - "alertmanager-1.meta.monitoring.homecluster.com"
             replicas: 2
             ruleSelectorNilUsesHelmValues: false
             ruleNamespaceSelector:
