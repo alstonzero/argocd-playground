@@ -17,6 +17,7 @@ spec:
     helm:
       releaseName: k8s-monitoring
       values: |
+        cleanPrometheusOperatorObjectNames: true
         defaultRules:
           rules:
             alertmanager: false
@@ -74,6 +75,14 @@ spec:
           servicePerReplica:
             enabled: true
           prometheusSpec:
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: nfs-csi
+                  accessModes: ["ReadWriteMany"]
+                  resources: 
+                  requests:
+                    storage: 10Gi
             topologySpreadConstraints:            
               - maxSkew: 1
                 topologyKey: kubernetes.io/hostname
