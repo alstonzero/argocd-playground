@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: api-server
+    spec:
+      containers:
+        - name: api-server
+          image: tiangolo/uwsgi-nginx-flask
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            requests:
+              cpu: 50m
+              memory: 2Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          volumeMounts:
+            - mountPath: /app/main.py
+              name: main-py
+              subPath: main.py
+            - mountPath: /htdocs
+              name: nfs
+      volumes:
+        - name: main-py
+          configMap:
+            name: main-py
+        - name: nfs
+          persistentVolumeClaim:
+            claimName: apache
