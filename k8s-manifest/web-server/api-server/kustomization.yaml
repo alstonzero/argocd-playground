@@ -4,7 +4,6 @@ namespace: apache
 resources:
   - deployment.yaml
   - service.yaml
-  - pv.yaml
 configMapGenerator:
   - name: main-py
     files:
