@@ -10,6 +10,6 @@ resources:
     memory: 128Mi
 service:
   type: LoadBalancer
-  loadBalancerIP: 11.0.1.180
+  loadBalancerIP: 11.0.1.228
   ports:
     https: 8080
