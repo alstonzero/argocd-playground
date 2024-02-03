@@ -12,5 +12,8 @@ configMapGenerator:
   - name: httpd-conf
     files:
       - httpd.conf
+resources:
+  - pv-pvc.yaml
 generatorOptions:
   disableNameSuffixHash: true
+
