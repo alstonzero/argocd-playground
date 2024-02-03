@@ -1,0 +1,15 @@
+htdocsPVC: apache
+httpdConfConfigMap: httpd-conf
+replicaCount: 1
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+service:
+  type: LoadBalancer
+  loadBalancerIP: 11.0.1.180
+  ports:
+    https: 8080
